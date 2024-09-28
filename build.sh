@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # Добавляем данные из настроек
-source ../settings.sh
+#source ../settings.sh
 
 # Начало отсчета времени выполнения скрипта
 start_time=$(date +%s)
 
 # Удаление каталога "out", если он существует
-rm -rf out
+#rm -rf out
 
 # Основной каталог
-MAINPATH=/home/timisong # измените, если необходимо
+MAINPATH=/home/luffitys # измените, если необходимо
 
 # Каталог ядра
-KERNEL_DIR=$MAINPATH/kernel
+KERNEL_DIR=$MAINPATH/magictime
 KERNEL_PATH=$KERNEL_DIR/kernel_xiaomi_sm8250
 
 git log $LAST..HEAD > ../log.txt
@@ -69,7 +69,7 @@ if [ ! -d "$MAGIC_TIME_DIR" ]; then
     
     # Проверка и клонирование Anykernel, если MagicTime не существует
     if [ ! -d "$MAGIC_TIME_DIR/Anykernel" ]; then
-        git clone https://github.com/TIMISONG-dev/Anykernel.git "$MAGIC_TIME_DIR/Anykernel"
+        git clone https://github.com/Luffitys/Anykernel3.git "$MAGIC_TIME_DIR/Anykernel"
         
         # Перемещение всех файлов из Anykernel в MagicTime
         mv "$MAGIC_TIME_DIR/Anykernel/"* "$MAGIC_TIME_DIR/"
@@ -90,9 +90,9 @@ export DTBPATH="$MAGIC_TIME_DIR/dtb"
 export DTBOPATH="$MAGIC_TIME_DIR/dtbo.img"
 export CROSS_COMPILE="aarch64-linux-gnu-"
 export CROSS_COMPILE_COMPAT="arm-linux-gnueabi-"
-export KBUILD_BUILD_USER="TIMISONG"
-export KBUILD_BUILD_HOST="timisong-dev"
-export MODEL="alioth"
+export KBUILD_BUILD_USER="LUFFITYS"
+export KBUILD_BUILD_HOST="luffitys"
+export MODEL="cmi"
 
 # Запись времени сборки
 MAGIC_BUILD_DATE=$(date '+%Y-%m-%d_%H-%M-%S')
@@ -102,8 +102,9 @@ output_dir=out
 
 # Конфигурация ядра
 make O="$output_dir" \
-            alioth_defconfig \
-            vendor/xiaomi/sm8250-common.config
+            vendor/kona-perf_defconfig \
+            vendor/xiaomi/sm8250-common.config \
+            vendor/xiaomi/cmi.config
 
     # Компиляция ядра
     make -j $(nproc) \
@@ -138,42 +139,42 @@ if grep -q -E "Ошибка 2|Error 2" error.log; then
     cd "$KERNEL_PATH"
     echo "Ошибка: Сборка завершилась с ошибкой"
 
-    curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
-    -d chat_id="@magictimekernel" \
-    -d text="Ошибка в компиляции!" \
-    -d message_thread_id="38153"
+#    curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
+#    -d chat_id="@magictimekernel" \
+#    -d text="Ошибка в компиляции!" \
+#    -d message_thread_id="38153"
 
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@magictimekernel" \
-    -F document=@"./error.log" \
-    -F message_thread_id="38153"
+#    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@magictimekernel" \
+#    -F document=@"./error.log" \
+#    -F message_thread_id="38153"
 else
     echo "Общее время выполнения: $elapsed_time секунд"
     # Перемещение в каталог MagicTime и создание архива
     cd "$MAGIC_TIME_DIR"
     7z a -mx9 MagicTime-$MODEL-$MAGIC_BUILD_DATE.zip * -x!*.zip
     
-    curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
-    -d chat_id="@magictimekernel" \
-    -d text="Компиляция завершилась успешно! Время выполнения: $elapsed_time секунд" \
-    -d message_thread_id="38153"
+#    curl -s -X POST https://api.telegram.org/bot$TGTOKEN/sendMessage \
+#    -d chat_id="@magictimekernel" \
+#    -d text="Компиляция завершилась успешно! Время выполнения: $elapsed_time секунд" \
+#    -d message_thread_id="38153"
 
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@magictimekernel" \
-    -F document=@"./MagicTime-$MODEL-$MAGIC_BUILD_DATE.zip" \
-    -F caption="MagicTime ${VERSION}${PREFIX}${BUILD} (${BUILD_TYPE})" \
-    -F message_thread_id="38153"
+#    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@magictimekernel" \
+#    -F document=@"./MagicTime-$MODEL-$MAGIC_BUILD_DATE.zip" \
+#    -F caption="MagicTime ${VERSION}${PREFIX}${BUILD} (${BUILD_TYPE})" \
+#    -F message_thread_id="38153"
     
-    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@magictimekernel" \
-    -F document=@"../log.txt" \
-    -F caption="Latest changes" \
-    -F message_thread_id="38153"
+#    curl -s -X POST "https://api.telegram.org/bot$TGTOKEN/sendDocument?chat_id=@magictimekernel" \
+#    -F document=@"../log.txt" \
+#    -F caption="Latest changes" \
+#    -F message_thread_id="38153"
 
-    rm -rf MagicTime-$MODEL-$MAGIC_BUILD_DATE.zip
+ #   rm -rf MagicTime-$MODEL-$MAGIC_BUILD_DATE.zip
 
     BUILD=$((BUILD + 1))
 
     cd "$KERNEL_PATH"
     LAST=$(git log -1 --format=%H)
 
-    sed -i "s/LAST=.*/LAST=$LAST/" ../settings.sh
-    sed -i "s/BUILD=.*/BUILD=$BUILD/" ../settings.sh
+#    sed -i "s/LAST=.*/LAST=$LAST/" ../settings.sh
+#    sed -i "s/BUILD=.*/BUILD=$BUILD/" ../settings.sh
 fi
